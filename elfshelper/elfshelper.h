@@ -11,12 +11,15 @@
 constexpr float scr_width{ 800.0f };
 constexpr float scr_height{ 740.0f };
 
+constexpr int MAX_COLS{ 10 };
+constexpr int MAX_ROWS{ 8 };
+
 enum class dirs { stop = 0, left = 1, right = 2, up = 3, down = 4 };
 
 enum class tiles { grass1 = 0, grass2 = 1, dirt = 2, water = 3, path = 4 };
-enum class obstacles { tree1 = 0, tree2 = 1, tree3 = 2, rock1 = 3, rock2 = 4, };
+enum class obstacles { tree1 = 0, tree2 = 1, tree3 = 2, rock1 = 3, rock2 = 4 };
 
-enum class houses { blue = 0, red = 1, green = 2, yellow = 3, purple = 4, brown =5 };
+enum class houses { blue = 0, red = 1, green = 2, yellow = 3, purple = 4, brown = 5 };
 
 enum class evils { tree = 0, demon = 1, fly = 2, nasty = 3 };
 
@@ -24,6 +27,26 @@ struct ELFS_API FPOINT
 {
 	float x{ 0 };
 	float y{ 0 };
+};
+
+struct ELFS_API TILE
+{
+	FPOINT start{};
+	FPOINT end{};
+
+	float width() const
+	{
+		return 80.0f;
+	}
+	float height() const
+	{
+		return 80.0f;
+	}
+
+	int col{ 0 };
+	int row{ 0 };
+
+	tiles type{ tiles::grass1 };
 };
 
 namespace dll
