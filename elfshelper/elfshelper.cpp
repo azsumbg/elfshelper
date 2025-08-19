@@ -135,3 +135,14 @@ bool dll::PROTON::Release()
 }
 
 /////////////////////////////
+
+
+
+
+// FUNCTION DEFINITIONS *******************************
+
+bool dll::Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
+	float y1_radius, float y2_radius)
+{
+	return ((abs(first.x - second.x) <= x1_radius + x2_radius) && (abs(first.y - second.y) <= y1_radius + y2_radius));
+}

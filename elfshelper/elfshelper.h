@@ -104,4 +104,9 @@ namespace dll
 
 
 
+
+	// FUNCTION DECLARATIONS **************************
+
+	bool ELFS_API Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
+		float y1_radius, float y2_radius1);
 }
