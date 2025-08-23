@@ -136,6 +136,92 @@ bool dll::PROTON::Release()
 
 /////////////////////////////
 
+// TILE **********************
+
+dll::TILE::TILE(tiles _what, float _sx, float _sy) :PROTON(_sx, _sy, 80.0f, 80.0f)
+{
+	type = _what;
+
+	switch (type)
+	{
+	case tiles::grass1:
+		tile_delay = 0;
+		break;
+
+	case tiles::grass2:
+		tile_delay = 0.2f;
+		break;
+
+	case tiles::dirt:
+		tile_delay = 0.3f;
+		break;
+
+	case tiles::path:
+		tile_delay = -0.2f;
+		break;
+
+	case tiles::water:
+		tile_delay = 10.0f;
+		break;
+	}
+}
+float dll::TILE::width() const
+{
+	return tile_width;
+}
+float dll::TILE::height() const
+{
+	return tile_height;
+}
+bool dll::TILE::Move(float gear)
+{
+	float my_speed = tile_speed += gear / 10;
+
+	switch (dir)
+	{
+	case dirs::left:
+		start.x -= my_speed;
+		SetEdges();
+		if (end.x <= -scr_width)return false;
+		break;
+
+	case dirs::right:
+		start.x += my_speed;
+		SetEdges();
+		if (start.x <= 2 * scr_width)return false;
+		break;
+
+	case dirs::up:
+		start.y -= my_speed;
+		SetEdges();
+		if (end.y <= -scr_height)return false;
+		break;
+
+	case dirs::down:
+		start.y += my_speed;
+		SetEdges();
+		if (start.y <= 2 * scr_height)return false;
+		break;
+	}
+
+	return true;
+}
+float dll::TILE::delay() const
+{
+	return tile_delay;
+}
+void dll::TILE::Release()
+{
+	delete this;
+}
+
+/////////////////////////////
+
+
+
+
+
+
 
 
 
@@ -145,4 +231,11 @@ bool dll::Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radiu
 	float y1_radius, float y2_radius)
 {
 	return ((abs(first.x - second.x) <= x1_radius + x2_radius) && (abs(first.y - second.y) <= y1_radius + y2_radius));
+}
+
+dll::TILE* ELFS_API dll::TileFactory(tiles what, float sx, float sy)
+{
+	TILE* ret{ nullptr };
+	ret = new TILE(what, sx, sy);
+	return ret;
 }

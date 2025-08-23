@@ -29,25 +29,6 @@ struct ELFS_API FPOINT
 	float y{ 0 };
 };
 
-struct ELFS_API TILE
-{
-	FPOINT start{};
-	FPOINT end{};
-
-	float width() const
-	{
-		return 80.0f;
-	}
-	float height() const
-	{
-		return 80.0f;
-	}
-
-	int col{ 0 };
-	int row{ 0 };
-
-	tiles type{ tiles::grass1 };
-};
 
 namespace dll
 {
@@ -98,7 +79,31 @@ namespace dll
 		bool Release();
 	};
 
+	class ELFS_API TILE :public PROTON
+	{
+	private:
+		float tile_width = 80.0f;
+		float tile_height = 80.0f;
+		float tile_speed{ 1.0f };
+		float tile_delay = { 0 };
 
+		TILE(tiles _what, float _sx, float _sy);
+
+	public:
+		tiles type{ tiles::grass1 };
+		dirs dir{ dirs::stop };
+
+		float width() const;
+		float height() const;
+
+		float delay() const;
+
+		bool Move(float gear);
+
+		void Release();
+
+		friend TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
+	};
 
 
 
@@ -109,4 +114,6 @@ namespace dll
 
 	bool ELFS_API Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
 		float y1_radius, float y2_radius1);
+
+	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 }
