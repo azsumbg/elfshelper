@@ -7,6 +7,7 @@
 #endif
 
 #include <random>
+#include <type_traits>
 
 constexpr float scr_width{ 800.0f };
 constexpr float scr_height{ 740.0f };
@@ -105,8 +106,63 @@ namespace dll
 		friend TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 	};
 
+	class ELFS_API ASSETS :public PROTON
+	{
+	protected:
+		float speed = 1.0f;
 
+	public:
 
+		dirs dir = dirs::stop;
+
+		ASSETS(float _where_x, float _where_y, float _new_speed);
+		virtual ~ASSETS() {};
+
+		bool Move(float gear);
+		virtual void Release() = 0;
+	};
+
+	template<typename T> class ELFS_API CreateAsset
+	{
+	public:
+		CreateAsset(int what, float first_x, float first_y, float field_speed, T* new_asset)
+		{
+			if constexpr (std::is_same<T, houses>::value)new_asset = new HOUSES(what, first_x, first_y, field_speed);
+			else if constexpr (std::is_same<T, obstacles>::value)new_asset = new OBSTACLES(what, first_x, first_y, field_speed);
+		}
+
+		virtual ~CreateAsset() {};
+	};
+
+	class ELFS_API HOUSES :public ASSETS
+	{
+	protected:
+	
+		HOUSES(int _what_type, float _wherex, float _wherey, float _newspeed);
+
+	public:
+
+		houses type{};
+
+		void Release()override;
+
+		friend class CreateAsset<HOUSES>;
+	};
+
+	class ELFS_API OBSTACLES :public ASSETS
+	{
+	protected:
+
+		OBSTACLES(int _what_type, float _wherex, float _wherey, float _newspeed);
+
+	public:
+
+		obstacles type{};
+
+		void Release()override;
+
+		friend class CreateAsset<OBSTACLES>;
+	};
 
 
 
@@ -116,4 +172,6 @@ namespace dll
 		float y1_radius, float y2_radius1);
 
 	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
+
+	
 }

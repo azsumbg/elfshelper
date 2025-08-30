@@ -217,13 +217,123 @@ void dll::TILE::Release()
 
 /////////////////////////////
 
+//ASSETS ********************
 
+dll::ASSETS::ASSETS(float _where_x, float _where_y, float _new_speed = 1.0f) :PROTON(_where_x, _where_y)
+{
+	speed = _new_speed;
+}
+bool dll::ASSETS::Move(float gear)
+{
+	float my_speed = speed += gear / 10;
 
+	switch (dir)
+	{
+	case dirs::left:
+		start.x -= my_speed;
+		SetEdges();
+		if (end.x <= -scr_width)return false;
+		break;
 
+	case dirs::right:
+		start.x += my_speed;
+		SetEdges();
+		if (start.x <= 2 * scr_width)return false;
+		break;
 
+	case dirs::up:
+		start.y -= my_speed;
+		SetEdges();
+		if (end.y <= -scr_height)return false;
+		break;
 
+	case dirs::down:
+		start.y += my_speed;
+		SetEdges();
+		if (start.y <= 2 * scr_height)return false;
+		break;
+	}
 
+	return true;
+}
 
+//////////////////////////////
+
+// HOUSES ********************
+
+dll::HOUSES::HOUSES(int _what_type, float _wherex, float _wherey, float _newspeed = 1.0f) :ASSETS(_wherex, _wherey, _newspeed)
+{
+	type = static_cast<houses>(_what_type);
+
+	switch (type)
+	{
+	case houses::blue:
+		NewDims(75.0f, 70.0f);
+		break;
+
+	case houses::red:
+		NewDims(75.0f, 70.0f);
+		break;
+
+	case houses::purple:
+		NewDims(75.0f, 70.0f);
+		break;
+
+	case houses::green:
+		NewDims(75.0f, 70.0f);
+		break;
+
+	case houses::yellow:
+		NewDims(75.0f, 70.0f);
+		break;
+
+	case houses::brown:
+		NewDims(75.0f, 70.0f);
+		break;
+	}
+}
+void dll::HOUSES::Release()
+{
+	delete this;
+}
+
+//////////////////////////////
+
+// OBSTACLES ****************
+
+dll::OBSTACLES::OBSTACLES(int _what_type, float _wherex, float _wherey, float _newspeed) :ASSETS(_wherex, _wherey, _newspeed)
+{
+	type = static_cast<obstacles>(_what_type);
+
+	switch (type)
+	{
+	case obstacles::rock1:
+		NewDims(47.0f, 80.0f);
+		break;
+
+	case obstacles::rock2:
+		NewDims(39.0f, 80.0f);
+		break;
+
+	case obstacles::tree1:
+		NewDims(35.0f, 60.0f);
+		break;
+
+	case obstacles::tree2:
+		NewDims(59.0f, 65.0f);
+		break;
+
+	case obstacles::tree3:
+		NewDims(60.0f, 55.0f);
+		break;
+	}
+}
+void dll::OBSTACLES::Release()
+{
+	delete this;
+}
+
+/////////////////////////////
 
 // FUNCTION DEFINITIONS *******************************
 
