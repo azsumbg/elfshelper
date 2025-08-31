@@ -106,6 +106,16 @@ namespace dll
 		friend TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 	};
 
+	////////////////////////////////////////
+
+	template<typename T> ELFS_API T* FieldFactory(int what_type, float wherex, float wherey, float newspeed)
+	{
+		if constexpr (std::is_same<T, houses>::value || std::is_same<T, obstacles>::value)
+			return new T(what_type, wherex, wherey, newspeed);
+
+		return nullptr;
+	};
+
 	class ELFS_API ASSETS :public PROTON
 	{
 	protected:
@@ -122,18 +132,6 @@ namespace dll
 		virtual void Release() = 0;
 	};
 
-	template<typename T> class ELFS_API CreateAsset
-	{
-	public:
-		CreateAsset(int what, float first_x, float first_y, float field_speed, T* new_asset)
-		{
-			if constexpr (std::is_same<T, houses>::value)new_asset = new HOUSES(what, first_x, first_y, field_speed);
-			else if constexpr (std::is_same<T, obstacles>::value)new_asset = new OBSTACLES(what, first_x, first_y, field_speed);
-		}
-
-		virtual ~CreateAsset() {};
-	};
-
 	class ELFS_API HOUSES :public ASSETS
 	{
 	protected:
@@ -146,7 +144,7 @@ namespace dll
 
 		void Release()override;
 
-		friend class CreateAsset<HOUSES>;
+		friend ELFS_API HOUSES* FieldFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	class ELFS_API OBSTACLES :public ASSETS
@@ -161,10 +159,10 @@ namespace dll
 
 		void Release()override;
 
-		friend class CreateAsset<OBSTACLES>;
+		friend ELFS_API OBSTACLES* FieldFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
-
+	///////////////////////////////////////
 
 	// FUNCTION DECLARATIONS **************************
 
