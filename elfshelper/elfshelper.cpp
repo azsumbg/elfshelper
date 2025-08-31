@@ -349,3 +349,11 @@ dll::TILE* ELFS_API dll::TileFactory(tiles what, float sx, float sy)
 	ret = new TILE(what, sx, sy);
 	return ret;
 }
+
+float dll::Distance(FPOINT first_center, FPOINT second_center)
+{
+	float a{ (float)(pow(abs(second_center.x - first_center.x), 2)) };
+	float b{ (float)(pow(abs(second_center.y - first_center.y), 2)) };
+
+	return (float)(sqrt(a + b));
+}

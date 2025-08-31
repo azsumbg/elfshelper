@@ -6,6 +6,7 @@
 #define ELFS_API __declspec(dllimport)
 #endif
 
+#include <cstdlib>
 #include <random>
 #include <type_traits>
 
@@ -24,12 +25,30 @@ enum class houses { blue = 0, red = 1, green = 2, yellow = 3, purple = 4, brown 
 
 enum class evils { tree = 0, demon = 1, fly = 2, nasty = 3 };
 
+enum class AI_actions { move = 0, attack = 1, stop = 2 };
+
 struct ELFS_API FPOINT
 {
 	float x{ 0 };
 	float y{ 0 };
 };
 
+struct ELFS_API STATUS
+{
+	float init_x{ 0 };
+	float init_y{ 0 };
+
+	float dest_x{ 0 };
+	float dest_y{ 0 };
+
+	AI_actions current_action{ AI_actions::stop };
+
+	bool action_possible = true;
+
+	FPOINT obst_start{};
+	FPOINT obst_end{};
+	FPOINT obst_center{};
+};
 
 namespace dll
 {
@@ -108,6 +127,171 @@ namespace dll
 
 	////////////////////////////////////////
 
+	// CONTAINER **************************
+
+	template<typename T> class ELFS_API BAG
+	{
+	private:
+		T* base_ptr{ nullptr };
+		size_t max_size{ 0 };
+		size_t current_pos{ 0 };
+		bool is_valid{ false };
+
+	public:
+
+		BAG() :max_size{ 1 }, base_ptr{ reinterpret_cast<T*>(calloc(max_size, sizeof(T))) }
+		{
+			if (base_ptr)is_valid = true;
+		}
+		BAG(size_t size):max_size{size}, base_ptr{ reinterpret_cast<T*>(calloc(max_size, sizeof(T))) }
+		{
+			if (base_ptr)is_valid = true;
+		}
+		BAG(size_t size,T first_element) :max_size{ size }, base_ptr{ reinterpret_cast<T*>(calloc(max_size, sizeof(T))) }
+		{
+			if (base_ptr)is_valid = true;
+			(*base_ptr) = first_element;
+		}
+
+		~BAG()
+		{
+			if (base_ptr)free(base_ptr);
+		}
+
+		bool valid() const
+		{
+			return is_valid;
+		}
+		size_t capacity()const
+		{
+			return max_size;
+		}
+		size_t size()const
+		{
+			return current_pos;
+		}
+
+		void push_front(T element)
+		{
+			if (base_ptr)
+			{
+				(*base_ptr) = element;
+				++current_pos;
+			}
+		}
+		void push_front(T* element)
+		{
+			if (base_ptr)
+			{
+				(*base_ptr) = (*element);
+				++current_pos;
+			}
+		}
+
+		void push_back(T element)
+		{
+			if (base_ptr)
+			{
+				if (current_pos < max_size)
+				{
+					base_ptr[current_pos] = element;
+					++current_pos;
+				}
+				else
+				{
+					++max_size;
+					base_ptr = reinterpret_cast<T*>(realloc(base_ptr, max_size * sizeof(T));
+
+					if (base_ptr)base_ptr[current_pos] = element;
+					++current_pos;
+				}
+			}
+		}
+		void push_back(T* element)
+		{
+			if (base_ptr)
+			{
+				if (current_pos < max_size)
+				{
+					base_ptr[current_pos] = (*element);
+					++current_pos;
+				}
+				else
+				{
+					++max_size;
+					base_ptr = reinterpret_cast<T*>(realloc(base_ptr, max_size * sizeof(T));
+
+					if (base_ptr)base_ptr[current_pos] = (*element);
+					++current_pos;
+				}
+			}
+		}
+
+		bool erase(size_t index)
+		{
+			if (index >= current_pos)return false;
+
+			if (base_ptr)
+			{
+				T* temp_ptr{ reinterpret_cast<T*>(calloc(max_size - 1,sizeof(T))) };
+
+				for (size_t count = 0; count < current_pos; ++count)
+				{
+					if (count < index)temp_ptr[count] = base_ptr[count];
+					else temp_ptr[count] = base_ptr[count - 1];
+				}
+
+				--current_pos;
+				--max_size;
+				
+				free(base_ptr);
+				base_ptr = temp_ptr;
+			}
+
+			return true;
+		}
+
+		T front() const
+		{
+			T dummy{};
+
+			if (base_ptr)return (*base_ptr);
+
+			return dummy;
+		}
+		T back() const
+		{
+			T dummy{};
+			if (base_ptr)return base_ptr[current_pos - 1];
+			return dummy;
+		}
+
+		T operator[](size_t index)
+		{
+			T dummy{};
+
+			if (base_ptr && index < current_pos)return base_ptr[index];
+
+			return dummy;
+		}
+
+		bool operator()(size_t index, T element)
+		{
+			if (base_ptr && index < current_pos)
+			{
+				base_ptr[index] = element;
+				return true;
+			}
+		
+			return false;
+		}
+	};
+
+	///////////////////////////////////////
+
+
+	// ASSETS *****************************
+
 	template<typename T> ELFS_API T* FieldFactory(int what_type, float wherex, float wherey, float newspeed)
 	{
 		if constexpr (std::is_same<T, houses>::value || std::is_same<T, obstacles>::value)
@@ -164,6 +348,17 @@ namespace dll
 
 	///////////////////////////////////////
 
+	class ELFS_API CREATURES :public PROTON
+	{
+	protected:
+
+
+	};
+
+
+
+
+
 	// FUNCTION DECLARATIONS **************************
 
 	bool ELFS_API Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
@@ -171,5 +366,5 @@ namespace dll
 
 	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 
-	
+	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
 }
