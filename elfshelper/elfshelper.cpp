@@ -357,3 +357,29 @@ float dll::Distance(FPOINT first_center, FPOINT second_center)
 
 	return (float)(sqrt(a + b));
 }
+
+bool dll::Sort(BAG<FPOINT>& container, FPOINT RefPoint)
+{
+	if (container.size() < 2)return false;
+
+	bool sorted = false;
+	
+	while (!sorted)
+	{
+		sorted = true;
+
+		for (size_t ind = 0; ind < container.size() - 1; ++ind)
+		{
+			if (Distance(container[ind], RefPoint) > Distance(container[ind + 1], RefPoint))
+			{
+				FPOINT temp = container[ind];
+				container[ind] = container[ind + 1];
+				container[ind + 1] = temp;
+
+				sorted = false;
+			}
+		}
+	}
+
+	return true;
+}

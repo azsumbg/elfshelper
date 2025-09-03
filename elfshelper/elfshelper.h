@@ -367,4 +367,6 @@ namespace dll
 	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 
 	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
+
+	bool ELFS_API Sort(BAG<FPOINT>& container, FPOINT RefPoint);
 }
