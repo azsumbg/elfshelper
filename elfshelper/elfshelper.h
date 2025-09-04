@@ -348,11 +348,42 @@ namespace dll
 
 	///////////////////////////////////////
 
-	class ELFS_API CREATURES :public PROTON
+	class ELFS_API EVILS :public PROTON
 	{
 	protected:
+		static int evil_id;
+		float speed = 0.2f;
 
+		float slope{ 0 };
+		float intercept{ 0 };
 
+		bool vert_move{ false };
+		bool hor_move{ false };
+
+		int attack_delay{ 0 };
+
+		int current_frame{ 0 };
+		int max_framea{ 0 };
+		int frame_delay{ 0 };
+
+		EVILS(evils _what, float _start_x, float _start_y);
+
+	public:
+		evils type = evils::fly;
+		int lifes = 0;
+		STATUS status{};
+
+		int GetID()const;
+
+		void SetMovePath(float to_where_x, float to_where_y);
+
+		bool Move();
+
+		int Attack() const;
+
+		int GetFrame();
+
+		friend EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 	};
 
 
@@ -365,6 +396,8 @@ namespace dll
 		float y1_radius, float y2_radius1);
 
 	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
+
+	EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 
 	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
 

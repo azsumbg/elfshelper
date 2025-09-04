@@ -335,6 +335,16 @@ void dll::OBSTACLES::Release()
 
 /////////////////////////////
 
+// EVILS *******************
+
+int dll::EVILS::evil_id = 0;
+
+
+
+
+
+//////////////////////////
+
 // FUNCTION DEFINITIONS *******************************
 
 bool dll::Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
