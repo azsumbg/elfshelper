@@ -339,9 +339,228 @@ void dll::OBSTACLES::Release()
 
 int dll::EVILS::evil_id = 0;
 
+dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x, _start_y)
+{
+	type = _what;
+	++evil_id;
 
+	switch (type)
+	{
+	case evils::tree:
+		NewDims(100.0f, 84.0f);
+		speed = 0.2f;
+		lifes = 150;
+		strenght = 40;
+		attack_delay = 50;
+		max_attack_delay = attack_delay;
+		max_frames = 60;
+		frame_delay = 1;
+		if (start.x >= scr_width / 2)dir = dirs::left;
+		else dir = dirs::right;
+		break;
 
+	case evils::demon:
+		NewDims(51.0f, 70.0f);
+		speed = 0.5f;
+		lifes = 100;
+		strenght = 30;
+		attack_delay = 30;
+		max_attack_delay = attack_delay;
+		max_frames = 4;
+		frame_delay = 12;
+		if (start.x >= scr_width / 2)dir = dirs::left;
+		else dir = dirs::right;
+		break;
 
+	case evils::fly:
+		NewDims(60.0f, 60.0f);
+		speed = 0.5f;
+		lifes = 80;
+		strenght = 20;
+		attack_delay = 20;
+		max_attack_delay = attack_delay;
+		max_frames = 16;
+		frame_delay = 4;
+		if (start.x >= scr_width / 2)dir = dirs::left;
+		else dir = dirs::right;
+		break;
+
+	case evils::nasty:
+		NewDims(70.0f, 55.0f);
+		speed = 0.4f;
+		lifes = 100;
+		strenght = 30;
+		attack_delay = 30;
+		max_attack_delay = attack_delay;
+		max_frames = 23;
+		frame_delay = 3;
+		if (start.x >= scr_width / 2)dir = dirs::left;
+		else dir = dirs::right;
+		break;
+	}
+
+	max_frame_delay = frame_delay;
+}
+	
+int dll::EVILS::GetID()const
+{
+	return evil_id;
+}
+
+void dll::EVILS::SetMovePath(float to_where_x, float to_where_y)
+{
+	status.init_x = start.x;
+	status.init_y = start.y;
+
+	status.dest_x = to_where_x;
+	status.dest_y = to_where_y;
+
+	hor_move = false;
+	vert_move = false;
+
+	if ((status.dest_x == status.init_x) || (status.dest_x > status.init_x && status.dest_x <= end.x))
+	{
+		vert_move = true;
+		return;
+	}
+	if ((status.dest_y == status.init_y) || (status.dest_y > status.init_y && status.dest_y <= end.y))
+	{
+		hor_move = true;
+		return;
+	}
+
+	slope = (status.dest_y - status.init_y) / (status.dest_x - status.init_x);
+	intercept = start.y - slope * start.x;
+}
+
+bool dll::EVILS::Move(float gear)
+{
+	float now_speed = speed + gear / 10.0f;
+
+	if (vert_move)
+	{
+		if (status.dest_y < status.init_y)
+		{
+			start.y -= now_speed;
+			SetEdges();
+			if (start.y >= status.dest_y)
+			{
+				need_new_action = true;
+				return false;
+			}
+			return true;
+		}
+		else if (status.dest_y > status.init_y)
+		{
+			start.y += now_speed;
+			SetEdges();
+			if (start.y <= status.dest_y)
+			{
+				need_new_action = true;
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			need_new_action = true;
+			return false;
+		}
+	}
+	else if (hor_move)
+	{
+		if (status.dest_x < status.init_x)
+		{
+			start.x -= now_speed;
+			SetEdges();
+			if (start.x >= status.dest_x)
+			{
+				need_new_action = true;
+				return false;
+			}
+			return true;
+		}
+		else if (status.dest_x > status.init_x)
+		{
+			start.x += now_speed;
+			SetEdges();
+			if (start.x <= status.dest_x)
+			{
+				need_new_action = true;
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			need_new_action = true;
+			return false;
+		}
+	}
+
+	if (status.dest_x < status.init_x)
+	{
+		start.x -= now_speed;
+		start.y = start.x * slope + intercept;
+		SetEdges();
+
+		if (start.x <= status.dest_x || start.x <= 0 || end.x >= scr_width || start.y <= sky || end.y >= ground)
+		{
+			need_new_action = true;
+			return false;
+		}
+	}
+	else if (status.dest_x > status.init_x)
+	{
+		start.x += now_speed;
+		start.y = start.x * slope + intercept;
+		SetEdges();
+
+		if (start.x >= status.dest_x || start.x <= 0 || end.x >= scr_width || start.y <= sky || end.y >= ground)
+		{
+			need_new_action = true;
+			return false;
+		}
+	}
+	else
+	{
+		need_new_action = true;
+		return false;
+	}
+
+	return true;
+}
+
+int dll::EVILS::Attack() 
+{
+	--attack_delay;
+	if (attack_delay <= 0)
+	{
+		attack_delay = max_attack_delay;
+		return strenght;
+	}
+
+	return 0;
+}
+
+int dll::EVILS::GetFrame()
+{
+	--frame_delay;
+	if (frame_delay <= 0)
+	{
+		frame_delay = max_frame_delay;
+
+		++current_frame;
+		if(current_frame >= max_frames)current_frame = 0;
+	}
+
+	return current_frame;
+}
+
+void dll::EVILS::Release()
+{
+	delete this;
+}
 
 //////////////////////////
 
@@ -392,4 +611,13 @@ bool dll::Sort(BAG<FPOINT>& container, FPOINT RefPoint)
 	}
 
 	return true;
+}
+
+dll::EVILS* ELFS_API dll::EvilFactory(evils what, float start_x, float start_y)
+{
+	EVILS* ret{ nullptr };
+
+	ret = new EVILS(what, start_x, start_y);
+
+	return ret;
 }

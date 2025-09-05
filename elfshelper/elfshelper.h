@@ -13,6 +13,9 @@
 constexpr float scr_width{ 800.0f };
 constexpr float scr_height{ 740.0f };
 
+constexpr float sky{ 50.0f };
+constexpr float ground{ 690.0f };
+
 constexpr int MAX_COLS{ 10 };
 constexpr int MAX_ROWS{ 8 };
 
@@ -361,10 +364,14 @@ namespace dll
 		bool hor_move{ false };
 
 		int attack_delay{ 0 };
+		int max_attack_delay{ 0 };
 
 		int current_frame{ 0 };
-		int max_framea{ 0 };
+		int max_frames{ 0 };
 		int frame_delay{ 0 };
+		int max_frame_delay{ 0 };
+
+		int strenght = 0;
 
 		EVILS(evils _what, float _start_x, float _start_y);
 
@@ -372,16 +379,20 @@ namespace dll
 		evils type = evils::fly;
 		int lifes = 0;
 		STATUS status{};
+		bool need_new_action = false;
+		dirs dir = dirs::stop;
 
 		int GetID()const;
 
 		void SetMovePath(float to_where_x, float to_where_y);
 
-		bool Move();
+		bool Move(float gear);
 
-		int Attack() const;
+		int Attack();
 
 		int GetFrame();
+
+		void Release();
 
 		friend EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 	};
