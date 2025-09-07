@@ -331,7 +331,7 @@ namespace dll
 
 		void Release()override;
 
-		friend ELFS_API HOUSES* FieldFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
+		friend HOUSES* ELFS_API FieldFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	class ELFS_API OBSTACLES :public ASSETS
@@ -346,7 +346,7 @@ namespace dll
 
 		void Release()override;
 
-		friend ELFS_API OBSTACLES* FieldFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
+		friend OBSTACLES* ELFS_API FieldFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	///////////////////////////////////////
@@ -397,9 +397,48 @@ namespace dll
 		friend EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 	};
 
+	class ELFS_API HERO:public PROTON
+	{
+	private:
+		float speed{ 1.0f };
 
+		int attack_delay{ 30 };
+		int max_attack_delay{ 30 };
 
+		int current_frame{ 0 };
+		int max_frames{ 10 };
+		int frame_delay{ 7 };
+		int max_frame_delay{ 7 };
 
+		int strenght = 0;
+
+		bool in_heap{ false };
+
+	public:
+		dirs dir{ dirs::stop };
+		int lifes = 150;
+		bool in_battle = false;
+
+		HERO(float _start_x, float start_y);
+
+		bool Move(float gear);
+
+		int Attack();
+
+		int GetFrame();
+
+		void Release();
+
+		friend ELFS_API HERO* HeroFactory(float _start_x, float _start_y);
+	};
+
+	// TYPE DEFINITIONS **************************
+	
+	typedef EVILS* evil_ptr;
+
+	typedef ASSETS* asset_ptr;
+
+	typedef HERO* hero_ptr;
 
 	// FUNCTION DECLARATIONS **************************
 
@@ -413,4 +452,6 @@ namespace dll
 	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
 
 	bool ELFS_API Sort(BAG<FPOINT>& container, FPOINT RefPoint);
+
+	HERO* ELFS_API HeroFactory(float _start_x, float _start_y);
 }

@@ -564,6 +564,100 @@ void dll::EVILS::Release()
 
 //////////////////////////
 
+// HERO **********************
+
+dll::HERO::HERO(float _start_x, float _start_y) :PROTON(_start_x, _start_y)
+{
+	NewDims(70.0f, 62.0f);
+}
+
+bool dll::HERO::Move(float gear)
+{
+	if (in_battle)
+	{
+		in_battle = false;
+
+		current_frame = 0;
+		max_frames = 10;
+		frame_delay = 7;
+		max_frame_delay = 7;
+	}
+
+	float now_speed = speed + gear / 10.0f;
+
+	switch (dir)
+	{
+	case dirs::up:
+		if (start.y - now_speed <= sky)return false;
+		start.y -= now_speed;
+		SetEdges();
+		break;
+
+	case dirs::down:
+		if (end.y + now_speed >= ground)return false;
+		start.y += now_speed;
+		SetEdges();
+		break;
+
+	case dirs::left:
+		if (start.x - now_speed <= 0)return false;
+		start.x -= now_speed;
+		SetEdges();
+		break;
+
+	case dirs::right:
+		if (end.x + now_speed >= scr_width)return false;
+		start.x += now_speed;
+		SetEdges();
+		break;
+	}
+
+	return true;
+}
+
+int dll::HERO::Attack()
+{
+	if (!in_battle)
+	{
+		current_frame = 0;
+		max_frames = 25;
+		frame_delay = 3;
+		max_frame_delay = 3;
+
+		in_battle = true;
+	}
+
+	--attack_delay;
+
+	if (attack_delay <= 0)
+	{
+		attack_delay = max_attack_delay;
+		return strenght;
+	}
+
+	return 0;
+}
+
+int dll::HERO::GetFrame()
+{
+	--frame_delay;
+	if (frame_delay < 0)
+	{
+		frame_delay = max_frame_delay;
+		++current_frame;
+		if (current_frame >= max_frames)current_frame = 0;
+	}
+
+	return current_frame;
+}
+
+void dll::HERO::Release()
+{
+	if (in_heap)delete this;
+}
+
+//////////////////////////////
+
 // FUNCTION DEFINITIONS *******************************
 
 bool dll::Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
@@ -618,6 +712,17 @@ dll::EVILS* ELFS_API dll::EvilFactory(evils what, float start_x, float start_y)
 	EVILS* ret{ nullptr };
 
 	ret = new EVILS(what, start_x, start_y);
+
+	return ret;
+}
+
+dll::HERO* ELFS_API dll::HeroFactory(float _start_x, float _start_y)
+{
+	HERO* ret{ nullptr };
+
+	ret = new HERO(_start_x, _start_y);
+
+	if (ret)ret->in_heap = true;
 
 	return ret;
 }
