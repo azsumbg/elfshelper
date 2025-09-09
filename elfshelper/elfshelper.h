@@ -28,7 +28,7 @@ enum class houses { blue = 0, red = 1, green = 2, yellow = 3, purple = 4, brown 
 
 enum class evils { tree = 0, demon = 1, fly = 2, nasty = 3 };
 
-enum class AI_actions { move = 0, attack = 1, stop = 2 };
+enum class AI_actions { move = 0, attack = 1, patrol = 2, stop = 3};
 
 struct ELFS_API FPOINT
 {
@@ -355,6 +355,8 @@ namespace dll
 	{
 	protected:
 		static int evil_id;
+
+		int my_id = 0;
 		float speed = 0.2f;
 
 		float slope{ 0 };
@@ -372,6 +374,7 @@ namespace dll
 		int max_frame_delay{ 0 };
 
 		int strenght = 0;
+		float range{ 0 };
 
 		EVILS(evils _what, float _start_x, float _start_y);
 
@@ -384,6 +387,8 @@ namespace dll
 
 		int GetID()const;
 
+		void SetID(int new_id);
+
 		void SetMovePath(float to_where_x, float to_where_y);
 
 		bool Move(float gear);
@@ -395,6 +400,8 @@ namespace dll
 		void Release();
 
 		friend EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
+	
+		friend void ELFS_API AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center);
 	};
 
 	class ELFS_API HERO:public PROTON
@@ -448,6 +455,8 @@ namespace dll
 	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 
 	EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
+
+	void ELFS_API AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center);
 
 	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
 

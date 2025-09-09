@@ -339,7 +339,7 @@ void dll::OBSTACLES::Release()
 
 int dll::EVILS::evil_id = 0;
 
-dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x, _start_y)
+dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) : PROTON(_start_x, _start_y), my_id{ evil_id }
 {
 	type = _what;
 	++evil_id;
@@ -350,6 +350,7 @@ dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x,
 		NewDims(100.0f, 84.0f);
 		speed = 0.2f;
 		lifes = 150;
+		range = 150.0f;
 		strenght = 40;
 		attack_delay = 50;
 		max_attack_delay = attack_delay;
@@ -363,6 +364,7 @@ dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x,
 		NewDims(51.0f, 70.0f);
 		speed = 0.5f;
 		lifes = 100;
+		range = 220.0f;
 		strenght = 30;
 		attack_delay = 30;
 		max_attack_delay = attack_delay;
@@ -376,6 +378,7 @@ dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x,
 		NewDims(60.0f, 60.0f);
 		speed = 0.5f;
 		lifes = 80;
+		range = 250.0f;
 		strenght = 20;
 		attack_delay = 20;
 		max_attack_delay = attack_delay;
@@ -389,6 +392,7 @@ dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x,
 		NewDims(70.0f, 55.0f);
 		speed = 0.4f;
 		lifes = 100;
+		range = 200.0f;
 		strenght = 30;
 		attack_delay = 30;
 		max_attack_delay = attack_delay;
@@ -404,7 +408,12 @@ dll::EVILS::EVILS(evils _what, float _start_x, float _start_y) :PROTON(_start_x,
 	
 int dll::EVILS::GetID()const
 {
-	return evil_id;
+	return my_id;
+}
+
+void dll::EVILS::SetID(int new_id)
+{
+	my_id = new_id;
 }
 
 void dll::EVILS::SetMovePath(float to_where_x, float to_where_y)
@@ -725,4 +734,16 @@ dll::HERO* ELFS_API dll::HeroFactory(float _start_x, float _start_y)
 	if (ret)ret->in_heap = true;
 
 	return ret;
+}
+
+void ELFS_API dll::AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center)
+{
+	switch (target_evil->status.current_action)
+	{
+		if (Distance(target_evil->center, hero_center) > target_evil->range)
+		{
+			target_evil->SetMovePath(target_evil->start.x - 200.0f, target_evil->start.y);
+			target_evil
+		}
+	}
 }
