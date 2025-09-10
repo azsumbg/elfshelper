@@ -376,6 +376,8 @@ namespace dll
 		int strenght = 0;
 		float range{ 0 };
 
+		dirs move_dir = dirs::stop;
+
 		EVILS(evils _what, float _start_x, float _start_y);
 
 	public:
@@ -384,6 +386,7 @@ namespace dll
 		STATUS status{};
 		bool need_new_action = false;
 		dirs dir = dirs::stop;
+		
 
 		int GetID()const;
 
@@ -401,7 +404,7 @@ namespace dll
 
 		friend EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 	
-		friend void ELFS_API AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center);
+		friend void ELFS_API AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed);
 	};
 
 	class ELFS_API HERO:public PROTON
@@ -456,7 +459,7 @@ namespace dll
 
 	EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 
-	void ELFS_API AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center);
+	void ELFS_API AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed);
 
 	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
 

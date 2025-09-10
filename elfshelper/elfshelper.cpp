@@ -450,6 +450,7 @@ bool dll::EVILS::Move(float gear)
 	{
 		if (status.dest_y < status.init_y)
 		{
+			move_dir = dirs::up;
 			start.y -= now_speed;
 			SetEdges();
 			if (start.y >= status.dest_y)
@@ -461,6 +462,7 @@ bool dll::EVILS::Move(float gear)
 		}
 		else if (status.dest_y > status.init_y)
 		{
+			move_dir = dirs::down;
 			start.y += now_speed;
 			SetEdges();
 			if (start.y <= status.dest_y)
@@ -480,6 +482,7 @@ bool dll::EVILS::Move(float gear)
 	{
 		if (status.dest_x < status.init_x)
 		{
+			move_dir = dirs::left;
 			start.x -= now_speed;
 			SetEdges();
 			if (start.x >= status.dest_x)
@@ -491,6 +494,7 @@ bool dll::EVILS::Move(float gear)
 		}
 		else if (status.dest_x > status.init_x)
 		{
+			move_dir = dirs::right;
 			start.x += now_speed;
 			SetEdges();
 			if (start.x <= status.dest_x)
@@ -509,6 +513,7 @@ bool dll::EVILS::Move(float gear)
 
 	if (status.dest_x < status.init_x)
 	{
+		move_dir = dirs::left;
 		start.x -= now_speed;
 		start.y = start.x * slope + intercept;
 		SetEdges();
@@ -521,6 +526,7 @@ bool dll::EVILS::Move(float gear)
 	}
 	else if (status.dest_x > status.init_x)
 	{
+		move_dir = dirs::right;
 		start.x += now_speed;
 		start.y = start.x * slope + intercept;
 		SetEdges();
@@ -736,14 +742,52 @@ dll::HERO* ELFS_API dll::HeroFactory(float _start_x, float _start_y)
 	return ret;
 }
 
-void ELFS_API dll::AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center)
+void ELFS_API dll::AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed)
 {
+	RANDIT Choice{};
+
+	target_evil->status.action_possible = true;
+
 	switch (target_evil->status.current_action)
 	{
-		if (Distance(target_evil->center, hero_center) > target_evil->range)
+	case AI_actions::stop:
+		if (Distance(target_evil->center, hero_center) > target_evil->range)  // PATROL
 		{
-			target_evil->SetMovePath(target_evil->start.x - 200.0f, target_evil->start.y);
-			target_evil
+			switch (Choice(0, 3))
+			{
+			case 0:
+				target_evil->SetMovePath(target_evil->start.x - 200.0f, target_evil->start.y);
+				break;
+
+			case 1:
+				target_evil->SetMovePath(target_evil->start.x + 200.0f, target_evil->start.y);
+				break;
+
+			case 2:
+				target_evil->SetMovePath(target_evil->start.x, target_evil->start.y + 200.0f);
+				break;
+
+			case 3:
+				target_evil->SetMovePath(target_evil->start.x, target_evil->start.y - 200.0f);
+				break;
+			}
+
+			target_evil->status.current_action = AI_actions::patrol;
 		}
+		else if (Intersect(target_evil->center, hero_center, target_evil->radiusX, 35.0f, target_evil->radiusY, 25.0f))  // ATTACK
+			target_evil->status.current_action = AI_actions::patrol;
+		break;
+
+	case AI_actions::patrol:
+		if (!target_evil->Move(game_speed))
+		{
+			switch (target_evil->move_dir)
+			{
+
+			}
+
+		}
+		break;
+
 	}
 }
