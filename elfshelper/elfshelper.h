@@ -16,6 +16,9 @@ constexpr float scr_height{ 740.0f };
 constexpr float sky{ 50.0f };
 constexpr float ground{ 690.0f };
 
+constexpr int MAX_FIELD_COLS{ 30 };
+constexpr int MAX_FIELD_ROWS{ 24 };
+
 constexpr int MAX_COLS{ 10 };
 constexpr int MAX_ROWS{ 8 };
 
@@ -110,22 +113,43 @@ namespace dll
 		float tile_speed{ 1.0f };
 		float tile_delay = { 0 };
 
-		TILE(tiles _what, float _sx, float _sy);
-
 	public:
 		tiles type{ tiles::grass1 };
 		dirs dir{ dirs::stop };
 
+		int tile_number{ 0 };
+
 		float width() const;
 		float height() const;
 
+		TILE(tiles _what, float _sx, float _sy);
+		
 		float delay() const;
-
-		bool Move(float gear);
-
 		void Release();
 
-		friend TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
+	};
+
+	class ELFS_API FIELD
+	{
+	private:
+		RANDIT tile_choice{};
+		TILE* FieldArray[MAX_FIELD_COLS][MAX_FIELD_ROWS];
+
+		int first_view_num = 0;
+		int last_view_num = 0;
+
+	public:
+		TILE* ViewPort[MAX_COLS * MAX_ROWS];
+
+		dirs dir = dirs::stop;
+
+		FIELD();
+
+		int GetColFromNumber(int number);
+		int GetRowFromNumber(int number);
+		
+		void MoveViewPort(float gear);
+
 	};
 
 	////////////////////////////////////////
@@ -454,8 +478,6 @@ namespace dll
 
 	bool ELFS_API Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
 		float y1_radius, float y2_radius1);
-
-	TILE* ELFS_API TileFactory(tiles what, float sx, float sy);
 
 	EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
 

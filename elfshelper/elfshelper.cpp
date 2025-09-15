@@ -138,7 +138,7 @@ bool dll::PROTON::Release()
 
 // TILE **********************
 
-dll::TILE::TILE(tiles _what, float _sx, float _sy) :PROTON(_sx, _sy, 80.0f, 80.0f)
+dll::TILE::TILE(tiles _what, float _sx, float _sy) :PROTON(_sx, _sy, 79.0f, 79.0f)
 {
 	type = _what;
 
@@ -173,49 +173,111 @@ float dll::TILE::height() const
 {
 	return tile_height;
 }
-bool dll::TILE::Move(float gear)
-{
-	float my_speed = tile_speed += gear / 10;
-
-	switch (dir)
-	{
-	case dirs::left:
-		start.x -= my_speed;
-		SetEdges();
-		if (end.x <= -scr_width)return false;
-		break;
-
-	case dirs::right:
-		start.x += my_speed;
-		SetEdges();
-		if (start.x <= 2 * scr_width)return false;
-		break;
-
-	case dirs::up:
-		start.y -= my_speed;
-		SetEdges();
-		if (end.y <= -scr_height)return false;
-		break;
-
-	case dirs::down:
-		start.y += my_speed;
-		SetEdges();
-		if (start.y <= 2 * scr_height)return false;
-		break;
-	}
-
-	return true;
-}
 float dll::TILE::delay() const
 {
 	return tile_delay;
 }
+
 void dll::TILE::Release()
 {
 	delete this;
 }
 
 /////////////////////////////
+
+// FIELD **********************
+
+dll::FIELD::FIELD()
+{
+	int tile_number = 0;
+
+	int tile_col = 0;
+	int tile_row = 0;
+
+	for (float y_pos = -scr_height; y_pos < 2 * scr_height; y_pos += 80.0f)
+	{
+		for (float x_pos = -scr_width; x_pos < 2 * scr_width; x_pos += 80.0f)
+		{
+			FieldArray[tile_col][tile_row] = new TILE(static_cast<tiles>(tile_choice(0, 4)), x_pos, y_pos);
+
+			FieldArray[tile_col][tile_row]->tile_number = tile_row * MAX_FIELD_COLS + tile_col;
+
+			++tile_col;
+		}
+
+		++tile_row;
+	}
+
+	bool found{ false };
+
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows]->end.x >= 0)
+			{
+				first_view_num = FieldArray[cols][rows]->tile_number;
+				last_view_num = first_view_num + 80;
+				break;
+			}
+		}
+	}
+	
+	for (int i = first_view_num; i < last_view_num; ++i)ViewPort[i] = FieldArray[GetColFromNumber(i)][GetRowFromNumber(i)];
+}
+int dll::FIELD::GetColFromNumber(int number)
+{
+	if (number < 0 || number >= MAX_FIELD_COLS)return -1;
+
+	int col_found = -1;
+
+	bool found{ false };
+
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows]->tile_number == number)col_found = FieldArray[cols][rows]->start.x / 80.0f;
+			found = true;
+			break;
+		}
+		if (found) break;
+	}
+
+	return col_found;
+}
+int dll::FIELD::GetRowFromNumber(int number)
+{
+	if (number < 0 || number >= MAX_FIELD_ROWS)return -1;
+
+	int row_found = -1;
+
+	bool found{ false };
+
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows]->tile_number == number)row_found = FieldArray[cols][rows]->start.y / 80.0f;
+			found = true;
+			break;
+		}
+		if (found) break;
+	}
+
+	return row_found;
+}
+void dll::FIELD::MoveViewPort(float gear)
+{
+
+
+
+	for (int i = first_view_num; i < last_view_num; ++i)ViewPort[i] = FieldArray[GetColFromNumber(i)][GetRowFromNumber(i)];
+
+}
+
+///////////////////////////////
 
 //ASSETS ********************
 
@@ -679,13 +741,6 @@ bool dll::Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radiu
 	float y1_radius, float y2_radius)
 {
 	return ((abs(first.x - second.x) <= x1_radius + x2_radius) && (abs(first.y - second.y) <= y1_radius + y2_radius));
-}
-
-dll::TILE* ELFS_API dll::TileFactory(tiles what, float sx, float sy)
-{
-	TILE* ret{ nullptr };
-	ret = new TILE(what, sx, sy);
-	return ret;
 }
 
 float dll::Distance(FPOINT first_center, FPOINT second_center)
