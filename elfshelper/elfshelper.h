@@ -58,6 +58,12 @@ struct ELFS_API STATUS
 
 namespace dll
 {
+	struct ELFS_API PAIR
+	{
+		int col{ 0 };
+		int row{ 0 };
+	};
+
 	class ELFS_API RANDIT
 	{
 	private:
@@ -139,7 +145,7 @@ namespace dll
 		int last_view_num = 0;
 
 	public:
-		TILE* ViewPort[MAX_COLS * MAX_ROWS];
+		PAIR ViewPort[MAX_COLS * MAX_ROWS]{};
 
 		dirs dir = dirs::stop;
 

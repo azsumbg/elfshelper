@@ -177,7 +177,6 @@ float dll::TILE::delay() const
 {
 	return tile_delay;
 }
-
 void dll::TILE::Release()
 {
 	delete this;
@@ -223,7 +222,11 @@ dll::FIELD::FIELD()
 		}
 	}
 	
-	for (int i = first_view_num; i < last_view_num; ++i)ViewPort[i] = FieldArray[GetColFromNumber(i)][GetRowFromNumber(i)];
+	for (int i = first_view_num; i < last_view_num; ++i)
+	{
+		ViewPort[i].col = GetColFromNumber(i);
+		ViewPort[i].row = GetRowFromNumber(i);
+	}
 }
 int dll::FIELD::GetColFromNumber(int number)
 {
@@ -270,11 +273,83 @@ int dll::FIELD::GetRowFromNumber(int number)
 }
 void dll::FIELD::MoveViewPort(float gear)
 {
+	switch (dir)
+	{
+	case dirs::up:
+		if (FieldArray[0][MAX_FIELD_ROWS - 1]->end.y - gear > ground)
+		{
+			for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+			{
+				for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+				{
+					FieldArray[cols][rows]->start.y -= gear;
+					FieldArray[cols][rows]->SetEdges();
+				}
+			}
+		}
+		break;
 
+	case dirs::down:
+		if (FieldArray[0][0]->start.y + gear < sky)
+		{
+			for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+			{
+				for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+				{
+					FieldArray[cols][rows]->start.y += gear;
+					FieldArray[cols][rows]->SetEdges();
+				}
+			}
+		}
+		break;
 
+	case dirs::left:
+		if (FieldArray[MAX_FIELD_COLS - 1][0]->end.x - gear > scr_width)
+		{
+			for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+			{
+				for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+				{
+					FieldArray[cols][rows]->start.x -= gear;
+					FieldArray[cols][rows]->SetEdges();
+				}
+			}
+		}
+		break;
 
-	for (int i = first_view_num; i < last_view_num; ++i)ViewPort[i] = FieldArray[GetColFromNumber(i)][GetRowFromNumber(i)];
+	case dirs::right:
+		if (FieldArray[0][0]->start.x + gear < 0)
+		{
+			for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+			{
+				for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+				{
+					FieldArray[cols][rows]->start.x += gear;
+					FieldArray[cols][rows]->SetEdges();
+				}
+			}
+		}
+		break;
+	}
 
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows]->end.x >= 0)
+			{
+				first_view_num = FieldArray[cols][rows]->tile_number;
+				last_view_num = first_view_num + 80;
+				break;
+			}
+		}
+	}
+	
+	for (int i = first_view_num; i < last_view_num; ++i)
+	{
+		ViewPort[i].col = GetColFromNumber(i);
+		ViewPort[i].row = GetRowFromNumber(i);
+	}
 }
 
 ///////////////////////////////
