@@ -213,7 +213,7 @@ dll::FIELD::FIELD()
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->end.x >= 0)
+			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
 				last_view_num = first_view_num + 80;
@@ -336,7 +336,7 @@ void dll::FIELD::MoveViewPort(float gear)
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->end.x >= 0)
+			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
 				last_view_num = first_view_num + 80;
@@ -876,48 +876,374 @@ void ELFS_API dll::AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_ar
 {
 	RANDIT Choice{};
 
-	target_evil->status.action_possible = true;
+	unsigned char obstacle = 0;
+
+	unsigned char right_obst = 0b00000001;
+	unsigned char left_obst = 0b00000010;
+	unsigned char down_obst = 0b00000100;
+	unsigned char up_obst = 0b00001000;
+
+	unsigned char up_right_obst = 0b00001001;
+	unsigned char up_left_obst = 0b00001010;
+
+	unsigned char down_right_obst = 0b00000101;
+	unsigned char down_left_obst = 0b00000110;
+
+	unsigned char inside_obst = 0b01000000;
+
+	if (!obstacle_arr.empty())
+	{
+		for (size_t count = 0; count < obstacle_arr.size(); ++count)
+		{
+			if (Intersect(obstacle_arr[count].center, target_evil->center, obstacle_arr[count].radiusX, target_evil->radiusX,
+				obstacle_arr[count].radiusY, target_evil->radiusY))
+			{
+				if (target_evil->start.x >= obstacle_arr[count].end.x)obstacle |= left_obst;
+				if (target_evil->end.x <= obstacle_arr[count].start.x)obstacle |= right_obst;
+
+				if (target_evil->start.y >= obstacle_arr[count].end.y)obstacle |= up_obst;
+				if (target_evil->end.y <= obstacle_arr[count].start.y)obstacle |= down_obst;
+				
+				break;
+			}
+		}
+	}
 
 	switch (target_evil->status.current_action)
 	{
 	case AI_actions::stop:
+		if (obstacle > 0)
+		{
+			if (obstacle == inside_obst)
+			{
+				if (target_evil->center.x < scr_width / 2)
+				{
+					target_evil->start.x += 100.0f + (float)(Choice(20, 80));
+					target_evil->SetEdges();
+					break;
+				}
+				else
+				{
+					target_evil->start.x -= 100.0f + (float)(Choice(20, 80));
+					target_evil->SetEdges();
+					break;
+				}
+			}
+			else if (obstacle & up_left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & up_right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y);
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y);
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & up_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x,
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::down;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x,
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::up;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+		}
 		if (Distance(target_evil->center, hero_center) > target_evil->range)  // PATROL
 		{
 			switch (Choice(0, 3))
 			{
 			case 0:
 				target_evil->SetMovePath(target_evil->start.x - 200.0f, target_evil->start.y);
+				target_evil->dir = dirs::left;
 				break;
 
 			case 1:
 				target_evil->SetMovePath(target_evil->start.x + 200.0f, target_evil->start.y);
+				target_evil->dir = dirs::right;
 				break;
 
 			case 2:
 				target_evil->SetMovePath(target_evil->start.x, target_evil->start.y + 200.0f);
+				target_evil->dir = dirs::down;
 				break;
 
 			case 3:
 				target_evil->SetMovePath(target_evil->start.x, target_evil->start.y - 200.0f);
+				target_evil->dir = dirs::up;
 				break;
 			}
 
 			target_evil->status.current_action = AI_actions::patrol;
 		}
-		else if (Intersect(target_evil->center, hero_center, target_evil->radiusX, 35.0f, target_evil->radiusY, 25.0f))  // ATTACK
-			target_evil->status.current_action = AI_actions::patrol;
+		else
+		{
+			if (Intersect(target_evil->center, hero_center, target_evil->radiusX, 35.0f, target_evil->radiusY, 25.0f))  // ATTACK
+				target_evil->status.current_action = AI_actions::attack;
+			else
+			{
+				target_evil->SetMovePath(hero_center.x, hero_center.y);
+				target_evil->status.current_action = AI_actions::move;
+			}
+		}
 		break;
 
 	case AI_actions::patrol:
+		if (obstacle > 0)
+		{
+			if (obstacle == inside_obst)
+			{
+				if (target_evil->center.x < scr_width / 2)
+				{
+					target_evil->start.x += 100.0f + (float)(Choice(20, 80));
+					target_evil->SetEdges();
+					break;
+				}
+				else
+				{
+					target_evil->start.x -= 100.0f + (float)(Choice(20, 80));
+					target_evil->SetEdges();
+					break;
+				}
+			}
+			else if (obstacle & up_left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & up_right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y);
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y);
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & up_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x,
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::down;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x,
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::up;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+		}
 		if (!target_evil->Move(game_speed))
 		{
 			switch (target_evil->move_dir)
 			{
+			case dirs::left:
+				target_evil->SetMovePath(target_evil->start.x + 200.0f, target_evil->start.y);
+				target_evil->dir = dirs::right;
+				break;
 
+			case dirs::right:
+				target_evil->SetMovePath(target_evil->start.x - 200.0f, target_evil->start.y);
+				target_evil->dir = dirs::left;
+				break;
+
+			case dirs::up:
+				target_evil->SetMovePath(target_evil->start.x, target_evil->start.y + 200.0f);
+				target_evil->dir = dirs::down;
+				break;
+
+			case dirs::down:
+				target_evil->SetMovePath(target_evil->start.x, target_evil->start.y - 200.0f);
+				target_evil->dir = dirs::up;
+				break;
 			}
-
 		}
 		break;
 
+	case AI_actions::move:
+		if (obstacle > 0)
+		{
+			if (obstacle == inside_obst)
+			{
+				if (target_evil->center.x < scr_width / 2)
+				{
+					target_evil->start.x += 100.0f + (float)(Choice(20, 80));
+					target_evil->SetEdges();
+					break;
+				}
+				else
+				{
+					target_evil->start.x -= 100.0f + (float)(Choice(20, 80));
+					target_evil->SetEdges();
+					break;
+				}
+			}
+			else if (obstacle & up_left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & up_right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & left_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x + 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y);
+				target_evil->dir = dirs::right;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & right_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x - 100.0f + (float)(Choice(0, 50)),
+					target_evil->end.y);
+				target_evil->dir = dirs::left;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & up_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x,
+					target_evil->end.y + 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::down;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+			else if (obstacle & down_obst)
+			{
+				target_evil->SetMovePath(target_evil->end.x,
+					target_evil->end.y - 100.0f + (float)(Choice(0, 50)));
+				target_evil->dir = dirs::up;
+				target_evil->status.current_action = AI_actions::move;
+				break;
+			}
+		}
+		if (Distance(target_evil->center, hero_center) > target_evil->range)  // CONTINUE
+		{
+			if (!target_evil->Move(game_speed))
+			{
+				target_evil->status.current_action = AI_actions::stop;
+				break;
+			}
+		}
+		else
+		{
+			if (Intersect(target_evil->center, hero_center, target_evil->radiusX, 35.0f, target_evil->radiusY, 25.0f))  // ATTACK
+				target_evil->status.current_action = AI_actions::attack;
+		}
+		break;
+
+	case AI_actions::attack:
+		if (Intersect(target_evil->center, hero_center, target_evil->radiusX, 35.0f, target_evil->radiusY, 25.0f))  // ATTACK
+			target_evil->status.current_action = AI_actions::attack;
+		else target_evil->status.current_action = AI_actions::stop;
 	}
 }

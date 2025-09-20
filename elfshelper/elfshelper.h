@@ -49,8 +49,6 @@ struct ELFS_API STATUS
 
 	AI_actions current_action{ AI_actions::stop };
 
-	bool action_possible = true;
-
 	FPOINT obst_start{};
 	FPOINT obst_end{};
 	FPOINT obst_center{};
@@ -195,6 +193,10 @@ namespace dll
 		{
 			return is_valid;
 		}
+		bool empty() const
+		{
+			return static_cast<bool>current_pos;
+		}
 		size_t capacity()const
 		{
 			return max_size;
@@ -325,7 +327,7 @@ namespace dll
 
 	// ASSETS *****************************
 
-	template<typename T> ELFS_API T* FieldFactory(int what_type, float wherex, float wherey, float newspeed)
+	template<typename T> ELFS_API T* AssetsFactory(int what_type, float wherex, float wherey, float newspeed)
 	{
 		if constexpr (std::is_same<T, houses>::value || std::is_same<T, obstacles>::value)
 			return new T(what_type, wherex, wherey, newspeed);
@@ -361,7 +363,7 @@ namespace dll
 
 		void Release()override;
 
-		friend HOUSES* ELFS_API FieldFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
+		friend HOUSES* ELFS_API AssetsFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	class ELFS_API OBSTACLES :public ASSETS
@@ -376,7 +378,7 @@ namespace dll
 
 		void Release()override;
 
-		friend OBSTACLES* ELFS_API FieldFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
+		friend OBSTACLES* ELFS_API AssetsFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	///////////////////////////////////////
