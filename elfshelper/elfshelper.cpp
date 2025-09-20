@@ -241,7 +241,7 @@ int dll::FIELD::GetColFromNumber(int number)
 
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->tile_number == number)col_found = FieldArray[cols][rows]->start.x / 80.0f;
+			if (FieldArray[cols][rows]->tile_number == number)col_found = (int)(FieldArray[cols][rows]->start.x / 80.0f);
 			found = true;
 			break;
 		}
@@ -262,7 +262,7 @@ int dll::FIELD::GetRowFromNumber(int number)
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->tile_number == number)row_found = FieldArray[cols][rows]->start.y / 80.0f;
+			if (FieldArray[cols][rows]->tile_number == number)row_found = (int)(FieldArray[cols][rows]->start.y / 80.0f);
 			found = true;
 			break;
 		}
@@ -852,7 +852,7 @@ bool dll::Sort(BAG<FPOINT>& container, FPOINT RefPoint)
 	return true;
 }
 
-dll::EVILS* ELFS_API dll::EvilFactory(evils what, float start_x, float start_y)
+ELFS_API dll::EVILS* dll::EvilFactory(evils what, float start_x, float start_y)
 {
 	EVILS* ret{ nullptr };
 
@@ -861,7 +861,7 @@ dll::EVILS* ELFS_API dll::EvilFactory(evils what, float start_x, float start_y)
 	return ret;
 }
 
-dll::HERO* ELFS_API dll::HeroFactory(float _start_x, float _start_y)
+ELFS_API dll::HERO* dll::HeroFactory(float _start_x, float _start_y)
 {
 	HERO* ret{ nullptr };
 
@@ -872,7 +872,7 @@ dll::HERO* ELFS_API dll::HeroFactory(float _start_x, float _start_y)
 	return ret;
 }
 
-void ELFS_API dll::AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed)
+ELFS_API void dll::AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed)
 {
 	RANDIT Choice{};
 

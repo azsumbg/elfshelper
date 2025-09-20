@@ -195,7 +195,7 @@ namespace dll
 		}
 		bool empty() const
 		{
-			return static_cast<bool>current_pos;
+			return static_cast<bool>(current_pos);
 		}
 		size_t capacity()const
 		{
@@ -235,7 +235,7 @@ namespace dll
 				else
 				{
 					++max_size;
-					base_ptr = reinterpret_cast<T*>(realloc(base_ptr, max_size * sizeof(T));
+					base_ptr = reinterpret_cast<T*>(realloc(base_ptr, max_size * sizeof(T)));
 
 					if (base_ptr)base_ptr[current_pos] = element;
 					++current_pos;
@@ -254,7 +254,7 @@ namespace dll
 				else
 				{
 					++max_size;
-					base_ptr = reinterpret_cast<T*>(realloc(base_ptr, max_size * sizeof(T));
+					base_ptr = reinterpret_cast<T*>(realloc(base_ptr, max_size * sizeof(T)));
 
 					if (base_ptr)base_ptr[current_pos] = (*element);
 					++current_pos;
@@ -303,11 +303,9 @@ namespace dll
 
 		T operator[](size_t index)
 		{
-			T dummy{};
-
 			if (base_ptr && index < current_pos)return base_ptr[index];
 
-			return dummy;
+			return base_ptr[current_pos - 1];
 		}
 
 		bool operator()(size_t index, T element)
@@ -363,7 +361,7 @@ namespace dll
 
 		void Release()override;
 
-		friend HOUSES* ELFS_API AssetsFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
+		friend ELFS_API HOUSES* AssetsFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	class ELFS_API OBSTACLES :public ASSETS
@@ -378,7 +376,7 @@ namespace dll
 
 		void Release()override;
 
-		friend OBSTACLES* ELFS_API AssetsFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
+		friend ELFS_API OBSTACLES* AssetsFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	///////////////////////////////////////
@@ -434,9 +432,9 @@ namespace dll
 
 		void Release();
 
-		friend EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
+		friend ELFS_API EVILS* EvilFactory(evils what, float start_x, float start_y);
 	
-		friend void ELFS_API AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed);
+		friend ELFS_API void AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed);
 	};
 
 	class ELFS_API HERO:public PROTON
@@ -484,16 +482,16 @@ namespace dll
 
 	// FUNCTION DECLARATIONS **************************
 
-	bool ELFS_API Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
+	ELFS_API bool Intersect(FPOINT first, FPOINT second, float x1_radius, float x2_radius,
 		float y1_radius, float y2_radius1);
 
-	EVILS* ELFS_API EvilFactory(evils what, float start_x, float start_y);
+	ELFS_API EVILS* EvilFactory(evils what, float start_x, float start_y);
 
-	void ELFS_API AINextMove(evil_ptr& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed);
+	ELFS_API void AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr, FPOINT hero_center, float game_speed);
 
-	float ELFS_API Distance(FPOINT first_center, FPOINT second_center);
+	ELFS_API float Distance(FPOINT first_center, FPOINT second_center);
 
-	bool ELFS_API Sort(BAG<FPOINT>& container, FPOINT RefPoint);
+	ELFS_API bool Sort(BAG<FPOINT>& container, FPOINT RefPoint);
 
-	HERO* ELFS_API HeroFactory(float _start_x, float _start_y);
+	ELFS_API HERO* HeroFactory(float _start_x, float _start_y);
 }
