@@ -228,6 +228,16 @@ dll::FIELD::FIELD()
 		ViewPort[i].row = GetRowFromNumber(i);
 	}
 }
+dll::FIELD::~FIELD()
+{
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows])delete FieldArray[cols][rows];
+		}
+	}
+}
 int dll::FIELD::GetColFromNumber(int number)
 {
 	if (number < 0 || number >= MAX_FIELD_COLS)return -1;
@@ -349,6 +359,58 @@ void dll::FIELD::MoveViewPort(float gear)
 	{
 		ViewPort[i].col = GetColFromNumber(i);
 		ViewPort[i].row = GetRowFromNumber(i);
+	}
+}
+void dll::FIELD::Recreate()
+{
+	int tile_number = 0;
+
+	int tile_col = 0;
+	int tile_row = 0;
+
+	for (float y_pos = -scr_height; y_pos < 2 * scr_height; y_pos += 80.0f)
+	{
+		for (float x_pos = -scr_width; x_pos < 2 * scr_width; x_pos += 80.0f)
+		{
+			FieldArray[tile_col][tile_row] = new TILE(static_cast<tiles>(tile_choice(0, 4)), x_pos, y_pos);
+
+			FieldArray[tile_col][tile_row]->tile_number = tile_row * MAX_FIELD_COLS + tile_col;
+
+			++tile_col;
+		}
+
+		++tile_row;
+	}
+
+	bool found{ false };
+
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
+			{
+				first_view_num = FieldArray[cols][rows]->tile_number;
+				last_view_num = first_view_num + 80;
+				break;
+			}
+		}
+	}
+
+	for (int i = first_view_num; i < last_view_num; ++i)
+	{
+		ViewPort[i].col = GetColFromNumber(i);
+		ViewPort[i].row = GetRowFromNumber(i);
+	}
+}
+void dll::FIELD::Release()
+{
+	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
+	{
+		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
+		{
+			if (FieldArray[cols][rows])delete FieldArray[cols][rows];
+		}
 	}
 }
 
@@ -581,37 +643,35 @@ void dll::EVILS::SetMovePath(float to_where_x, float to_where_y)
 
 bool dll::EVILS::Move(float gear)
 {
-	float now_speed = speed + gear / 10.0f;
+	float now_speed = speed + gear / 10.0f - tile_delay;
 
 	if (vert_move)
 	{
 		if (status.dest_y < status.init_y)
 		{
-			move_dir = dirs::up;
+			dir = dirs::up;
 			start.y -= now_speed;
 			SetEdges();
 			if (start.y >= status.dest_y)
 			{
-				need_new_action = true;
+				
 				return false;
 			}
 			return true;
 		}
 		else if (status.dest_y > status.init_y)
 		{
-			move_dir = dirs::down;
+			dir = dirs::down;
 			start.y += now_speed;
 			SetEdges();
 			if (start.y <= status.dest_y)
 			{
-				need_new_action = true;
 				return false;
 			}
 			return true;
 		}
 		else
 		{
-			need_new_action = true;
 			return false;
 		}
 	}
@@ -619,64 +679,58 @@ bool dll::EVILS::Move(float gear)
 	{
 		if (status.dest_x < status.init_x)
 		{
-			move_dir = dirs::left;
+			dir = dirs::left;
 			start.x -= now_speed;
 			SetEdges();
 			if (start.x >= status.dest_x)
 			{
-				need_new_action = true;
 				return false;
 			}
 			return true;
 		}
 		else if (status.dest_x > status.init_x)
 		{
-			move_dir = dirs::right;
+			dir = dirs::right;
 			start.x += now_speed;
 			SetEdges();
 			if (start.x <= status.dest_x)
 			{
-				need_new_action = true;
 				return false;
 			}
 			return true;
 		}
 		else
 		{
-			need_new_action = true;
 			return false;
 		}
 	}
 
 	if (status.dest_x < status.init_x)
 	{
-		move_dir = dirs::left;
+		dir = dirs::left;
 		start.x -= now_speed;
 		start.y = start.x * slope + intercept;
 		SetEdges();
 
 		if (start.x <= status.dest_x || start.x <= 0 || end.x >= scr_width || start.y <= sky || end.y >= ground)
 		{
-			need_new_action = true;
 			return false;
 		}
 	}
 	else if (status.dest_x > status.init_x)
 	{
-		move_dir = dirs::right;
+		dir = dirs::right;
 		start.x += now_speed;
 		start.y = start.x * slope + intercept;
 		SetEdges();
 
 		if (start.x >= status.dest_x || start.x <= 0 || end.x >= scr_width || start.y <= sky || end.y >= ground)
 		{
-			need_new_action = true;
 			return false;
 		}
 	}
 	else
 	{
-		need_new_action = true;
 		return false;
 	}
 
@@ -1118,7 +1172,7 @@ ELFS_API void dll::AINextMove(EVILS*& target_evil, BAG<OBSTACLES>& obstacle_arr,
 		}
 		if (!target_evil->Move(game_speed))
 		{
-			switch (target_evil->move_dir)
+			switch (target_evil->dir)
 			{
 			case dirs::left:
 				target_evil->SetMovePath(target_evil->start.x + 200.0f, target_evil->start.y);

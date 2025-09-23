@@ -148,19 +148,23 @@ namespace dll
 		dirs dir = dirs::stop;
 
 		FIELD();
+		~FIELD();
 
 		int GetColFromNumber(int number);
 		int GetRowFromNumber(int number);
 		
 		void MoveViewPort(float gear);
 
+		void Release();
+
+		void Recreate();
 	};
 
 	////////////////////////////////////////
 
 	// CONTAINER **************************
 
-	template<typename T> class ELFS_API BAG
+	template<typename T> class BAG
 	{
 	private:
 		T* base_ptr{ nullptr };
@@ -325,7 +329,7 @@ namespace dll
 
 	// ASSETS *****************************
 
-	template<typename T> ELFS_API T* AssetsFactory(int what_type, float wherex, float wherey, float newspeed)
+	template<typename T> T* AssetsFactory(int what_type, float wherex, float wherey, float newspeed)
 	{
 		if constexpr (std::is_same<T, houses>::value || std::is_same<T, obstacles>::value)
 			return new T(what_type, wherex, wherey, newspeed);
@@ -361,7 +365,7 @@ namespace dll
 
 		void Release()override;
 
-		friend ELFS_API HOUSES* AssetsFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
+		friend HOUSES* AssetsFactory<HOUSES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	class ELFS_API OBSTACLES :public ASSETS
@@ -376,7 +380,7 @@ namespace dll
 
 		void Release()override;
 
-		friend ELFS_API OBSTACLES* AssetsFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
+		friend OBSTACLES* AssetsFactory<OBSTACLES>(int what_type, float wherex, float wherey, float newspeed);
 	};
 
 	///////////////////////////////////////
@@ -406,17 +410,15 @@ namespace dll
 		int strenght = 0;
 		float range{ 0 };
 
-		dirs move_dir = dirs::stop;
-
 		EVILS(evils _what, float _start_x, float _start_y);
 
 	public:
 		evils type = evils::fly;
 		int lifes = 0;
 		STATUS status{};
-		bool need_new_action = false;
 		dirs dir = dirs::stop;
-		
+
+		float tile_delay = 0;
 
 		int GetID()const;
 
