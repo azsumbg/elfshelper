@@ -17,7 +17,7 @@ constexpr float sky{ 50.0f };
 constexpr float ground{ 690.0f };
 
 constexpr int MAX_FIELD_COLS{ 30 };
-constexpr int MAX_FIELD_ROWS{ 24 };
+constexpr int MAX_FIELD_ROWS{ 28 };
 
 constexpr int MAX_COLS{ 10 };
 constexpr int MAX_ROWS{ 8 };
@@ -137,13 +137,13 @@ namespace dll
 	{
 	private:
 		RANDIT tile_choice{};
-		TILE* FieldArray[MAX_FIELD_COLS][MAX_FIELD_ROWS];
 
 		int first_view_num = 0;
-		int last_view_num = 0;
-
+		
 	public:
+		TILE* FieldArray[MAX_FIELD_COLS][MAX_FIELD_ROWS];
 		PAIR ViewPort[MAX_COLS * MAX_ROWS]{};
+
 
 		dirs dir = dirs::stop;
 

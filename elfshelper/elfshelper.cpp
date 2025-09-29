@@ -195,6 +195,8 @@ dll::FIELD::FIELD()
 
 	for (float y_pos = -scr_height; y_pos < 2 * scr_height; y_pos += 80.0f)
 	{
+		tile_col = 0;
+
 		for (float x_pos = -scr_width; x_pos < 2 * scr_width; x_pos += 80.0f)
 		{
 			FieldArray[tile_col][tile_row] = new TILE(static_cast<tiles>(tile_choice(0, 4)), x_pos, y_pos);
@@ -208,24 +210,30 @@ dll::FIELD::FIELD()
 	}
 
 	bool found{ false };
-
+	
 	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
+			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 50.0f)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
-				last_view_num = first_view_num + 80;
+				found = true;
 				break;
 			}
 		}
+		if (found)break;
 	}
 	
-	for (int i = first_view_num; i < last_view_num; ++i)
+	int current_view_num = first_view_num;
+	int last_col = GetColFromNumber(first_view_num) + 9;
+
+	for (int i = 0; i < 80; ++i)
 	{
-		ViewPort[i].col = GetColFromNumber(i);
-		ViewPort[i].row = GetRowFromNumber(i);
+		ViewPort[i].col = GetColFromNumber(current_view_num);
+		ViewPort[i].row = GetRowFromNumber(current_view_num);
+		if (ViewPort[i].col == last_col)current_view_num += MAX_FIELD_COLS - 9;
+		else ++current_view_num;
 	}
 }
 dll::FIELD::~FIELD()
@@ -240,7 +248,7 @@ dll::FIELD::~FIELD()
 }
 int dll::FIELD::GetColFromNumber(int number)
 {
-	if (number < 0 || number >= MAX_FIELD_COLS)return -1;
+	if (number < 0 || number >= MAX_FIELD_COLS * MAX_FIELD_ROWS)return -1;
 
 	int col_found = -1;
 
@@ -248,12 +256,14 @@ int dll::FIELD::GetColFromNumber(int number)
 
 	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
 	{
-
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->tile_number == number)col_found = (int)(FieldArray[cols][rows]->start.x / 80.0f);
-			found = true;
-			break;
+			if (FieldArray[cols][rows]->tile_number == number)
+			{
+				col_found = cols;
+				found = true;
+				break;
+			}
 		}
 		if (found) break;
 	}
@@ -262,7 +272,7 @@ int dll::FIELD::GetColFromNumber(int number)
 }
 int dll::FIELD::GetRowFromNumber(int number)
 {
-	if (number < 0 || number >= MAX_FIELD_ROWS)return -1;
+	if (number < 0 || number >= MAX_FIELD_ROWS * MAX_FIELD_ROWS)return -1;
 
 	int row_found = -1;
 
@@ -272,9 +282,12 @@ int dll::FIELD::GetRowFromNumber(int number)
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->tile_number == number)row_found = (int)(FieldArray[cols][rows]->start.y / 80.0f);
-			found = true;
-			break;
+			if (FieldArray[cols][rows]->tile_number == number)
+			{
+				row_found = rows;
+				found = true;
+				break;
+			}
 		}
 		if (found) break;
 	}
@@ -349,16 +362,20 @@ void dll::FIELD::MoveViewPort(float gear)
 			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
-				last_view_num = first_view_num + 80;
 				break;
 			}
 		}
 	}
 	
-	for (int i = first_view_num; i < last_view_num; ++i)
+	int current_view_num = first_view_num;
+	int last_col = GetColFromNumber(first_view_num) + 9;
+
+	for (int i = 0; i < 80; ++i)
 	{
-		ViewPort[i].col = GetColFromNumber(i);
-		ViewPort[i].row = GetRowFromNumber(i);
+		ViewPort[i].col = GetColFromNumber(current_view_num);
+		ViewPort[i].row = GetRowFromNumber(current_view_num);
+		if (ViewPort[i].col == last_col)current_view_num += MAX_FIELD_COLS - 9;
+		else ++current_view_num;
 	}
 }
 void dll::FIELD::Recreate()
@@ -391,16 +408,22 @@ void dll::FIELD::Recreate()
 			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
-				last_view_num = first_view_num + 80;
+				found = true;
 				break;
 			}
 		}
+		if (found)break;
 	}
 
-	for (int i = first_view_num; i < last_view_num; ++i)
+	int current_view_num = first_view_num;
+	int last_col = GetColFromNumber(first_view_num) + 9;
+
+	for (int i = 0; i < 80; ++i)
 	{
-		ViewPort[i].col = GetColFromNumber(i);
-		ViewPort[i].row = GetRowFromNumber(i);
+		ViewPort[i].col = GetColFromNumber(current_view_num);
+		ViewPort[i].row = GetRowFromNumber(current_view_num);
+		if (ViewPort[i].col == last_col)current_view_num += MAX_FIELD_COLS - 9;
+		else ++current_view_num;
 	}
 }
 void dll::FIELD::Release()
