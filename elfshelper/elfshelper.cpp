@@ -355,16 +355,20 @@ void dll::FIELD::MoveViewPort(float gear)
 		break;
 	}
 
+	bool found = false;
+
 	for (int cols = 0; cols < MAX_FIELD_COLS; ++cols)
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
+			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 50.0f)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
+				found = true;
 				break;
 			}
 		}
+		if (found)break;
 	}
 	
 	int current_view_num = first_view_num;
@@ -405,7 +409,7 @@ void dll::FIELD::Recreate()
 	{
 		for (int rows = 0; rows < MAX_FIELD_ROWS; ++rows)
 		{
-			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 0)
+			if (FieldArray[cols][rows]->end.x >= 0 && FieldArray[cols][rows]->end.y >= 50.0f)
 			{
 				first_view_num = FieldArray[cols][rows]->tile_number;
 				found = true;
