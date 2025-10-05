@@ -17,10 +17,10 @@ constexpr float sky{ 50.0f };
 constexpr float ground{ 690.0f };
 
 constexpr int MAX_FIELD_COLS{ 30 };
-constexpr int MAX_FIELD_ROWS{ 28 };
+constexpr int MAX_FIELD_ROWS{ 27 };
 
-constexpr int MAX_COLS{ 10 };
-constexpr int MAX_ROWS{ 8 };
+constexpr int MAX_COLS{ 12 };
+constexpr int MAX_ROWS{ 10 };
 
 enum class dirs { stop = 0, left = 1, right = 2, up = 3, down = 4 };
 
@@ -143,7 +143,8 @@ namespace dll
 	public:
 		TILE* FieldArray[MAX_FIELD_COLS][MAX_FIELD_ROWS];
 		PAIR ViewPort[MAX_COLS * MAX_ROWS]{};
-
+		bool right_end = false;
+		bool down_end = false;
 
 		dirs dir = dirs::stop;
 
